@@ -13,7 +13,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Sync files to GoDaddy
-        uses: SamKirkland/FTP-Deploy-Action@v4
+        uses: SamKirkland/FTP-Deploy-Action
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
