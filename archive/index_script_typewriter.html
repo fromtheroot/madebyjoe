@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>madebyjoe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #191919;
+            color: #ffffff;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.5em;
+            line-height: 1.5;
+            padding: 60px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .terminal-container {
+            max-width: 1200px;
+            width: 100%;
+            background-color: transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .content {
+            position: relative;
+            min-height: 400px;
+        }
+        
+        .typing-line {
+            margin-bottom: 30px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .typing-line.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .typing-line:nth-child(1) {
+            color: #ffffff;
+        }
+        
+        .typing-line:nth-child(2) {
+            color: #cccccc;
+        }
+        
+        .typing-line:nth-child(3) {
+            color: #999999;
+        }
+        
+        .cursor {
+            display: inline-block;
+            width: 3px;
+            height: 28px;
+            background-color: #ffffff;
+            margin-left: 2px;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%,
+            50% {
+                opacity: 1;
+            }
+            51%,
+            100% {
+                opacity: 0;
+            }
+        }
+        
+        .link-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .link {
+            color: #f74f14;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .link:hover {
+            color: #ff6b35;
+            text-shadow: 0 0 12px rgba(247, 79, 20, 0.6);
+        }
+        
+        .link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: #f74f14;
+            transition: width 0.3s ease;
+        }
+        
+        .link:hover::after {
+            width: 100%;
+        }
+        /* Link preview tooltip styles */
+        
+        .preview-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+        /* Arrow pointing down from tooltip */
+        
+        .link-preview::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: #2a2a2a;
+        }
+        
+        .link-preview::before {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 7px solid transparent;
+            border-top-color: #444;
+            z-index: -1;
+        }
+        
+        .emoji {
+            display: inline-block;
+            margin: 0 4px;
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-5px);
+            }
+            60% {
+                transform: translateY(-3px);
+            }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 30px;
+                font-size: 18px;
+            }
+            .content {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="terminal-container fade-in">
+        <div class="content" id="content">
+            <!-- Content will be populated by JavaScript -->
+        </div>
+
+
+    </div>
+
+    <script>
+        class TypeWriter {
+            constructor(element, text, speed = 50) {
+                this.element = element;
+                this.text = text;
+                this.speed = speed;
+                this.currentIndex = 0;
+                this.currentLine = 0;
+                this.lines = text.split('\n');
+                this.isTyping = false;
+            }
+
+            async type() {
+                if (this.isTyping) return Promise.resolve();
+                this.isTyping = true;
+
+                for (let i = 0; i < this.lines.length; i++) {
+                    const line = this.lines[i];
+                    if (line.trim() === '') {
+                        await this.wait(500);
+                        continue;
+                    }
+
+                    const lineElement = document.createElement('div');
+                    lineElement.className = 'typing-line';
+                    this.element.appendChild(lineElement);
+
+                    // Add a small delay before starting to type each line
+                    let lineDelay = 200;
+
+                    // Add longer pauses for specific lines
+                    if (line.includes("Want me to make something for you?")) {
+                        lineDelay = 1000; // 1 second pause
+                    } else if (line.includes("Get in touch at hello@madebyjoe.co")) {
+                        lineDelay = 1000; // 1 second pause
+                    }
+
+                    await this.wait(lineDelay);
+
+                    // Make the line visible
+                    lineElement.classList.add('visible');
+
+                    // Type out the line character by character
+                    for (let j = 0; j < line.length; j++) {
+                        const char = line[j];
+
+                        // Check if this is a link
+                        if (this.isLinkStart(line, j)) {
+                            console.log('Link detected at position', j, 'in line:', line.substring(j, j + 20));
+                            const linkInfo = this.extractLink(line, j);
+                            console.log('Link info:', linkInfo);
+                            // Type out the link character by character within a growing link element
+                            let linkText = '';
+                            let linkStarted = false;
+
+                            for (let k = 0; k < linkInfo.pattern.length; k++) {
+                                const linkChar = linkInfo.pattern[k];
+                                linkText += linkChar;
+
+                                // Remove any existing cursor
+                                this.removeCursor(lineElement);
+
+                                if (!linkStarted) {
+                                    lineElement.innerHTML += `<a href="${linkInfo.url}" class="link" target="_blank">${linkText}</a>`;
+                                    linkStarted = true;
+                                } else {
+                                    const lastLinkIndex = lineElement.innerHTML.lastIndexOf('<a');
+                                    const beforeLink = lineElement.innerHTML.substring(0, lastLinkIndex);
+                                    lineElement.innerHTML = beforeLink +
+                                        `<a href="${linkInfo.url}" class="link" target="_blank">${linkText}</a>`;
+                                }
+
+                                // Add cursor
+                                this.addCursor(lineElement);
+
+                                // Random pause to simulate human typing
+                                const pauseTime = this.getRandomPause();
+                                await this.wait(pauseTime);
+                            }
+                            j += linkInfo.pattern.length - 1;
+                        } else {
+                            lineElement.innerHTML += char;
+                        }
+
+                        // Add cursor
+                        this.addCursor(lineElement);
+
+                        // Random pause to simulate human typing
+                        let pauseTime = this.getRandomPause();
+
+                        // Add longer pause after sentences (periods)
+                        if (char === '.') {
+                            pauseTime += 1000; // Extra 1000ms pause after sentences
+                        }
+
+                        await this.wait(pauseTime);
+                    }
+
+                    // Remove cursor from this line
+                    this.removeCursor(lineElement);
+
+                    // Add shorter pause between lines
+                    await this.wait(150);
+                }
+
+                this.isTyping = false;
+                return Promise.resolve();
+            }
+
+            isLinkStart(line, index) {
+                const linkPatterns = [
+                    'joe.graphics',
+                    'fromtheroot.studio',
+                    'syntheticlabs.xyz',
+                    'cerebral.studio',
+                    'context.agency',
+                    'hello@madebyjoe.co'
+                ];
+
+                for (const pattern of linkPatterns) {
+                    if (line.substring(index, index + pattern.length) === pattern) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            extractLink(line, startIndex) {
+                const linkPatterns = [{
+                    pattern: 'joe.graphics',
+                    url: 'https://joe.graphics',
+                    preview: {
+                        image: 'img/joe-graphics.png',
+                        title: 'Joe Graphics',
+                        description: 'Graphics work and creative projects by Joe'
+                    }
+                }, {
+                    pattern: 'fromtheroot.studio',
+                    url: 'https://fromtheroot.studio',
+                    preview: {
+                        image: 'img/fromtheroot-studio.png',
+                        title: 'From The Root Studio',
+                        description: 'Digital assets, 3D animation visuals and solutions'
+                    }
+                }, {
+                    pattern: 'syntheticlabs.xyz',
+                    url: 'https://syntheticlabs.xyz',
+                    preview: {
+                        image: 'img/syntheticlabs-xyz.png',
+                        title: 'Synthetic Labs',
+                        description: 'AI research and tools development'
+                    }
+                }, {
+                    pattern: 'cerebral.studio',
+                    url: 'https://cerebral.studio',
+                    preview: {
+                        image: 'img/cerebral-studio.png',
+                        title: 'Cerebral Studio',
+                        description: 'Compute and infrastructure services'
+                    }
+                }, {
+                    pattern: 'context.agency',
+                    url: 'https://context-agency.webflow.io',
+                    preview: {
+                        image: 'img/context-agency.png',
+                        title: 'Context Agency',
+                        description: 'Templated and bespoke automation solutions'
+                    }
+                }, {
+                    pattern: 'hello@madebyjoe.co',
+                    url: 'mailto:hello@madebyjoe.co',
+                    preview: {
+                        image: 'img/email-preview.png',
+                        title: 'Get in Touch',
+                        description: 'Email Joe at hello@madebyjoe.co'
+                    }
+                }];
+
+                for (const linkInfo of linkPatterns) {
+                    if (line.substring(startIndex, startIndex + linkInfo.pattern.length) === linkInfo.pattern) {
+                        return {
+                            pattern: linkInfo.pattern,
+                            url: linkInfo.url,
+                            preview: linkInfo.preview,
+                            length: linkInfo.pattern.length
+                        };
+                    }
+                }
+
+                return {
+                    pattern: line[startIndex],
+                    url: null,
+                    length: 1
+                };
+            }
+
+            addCursor(element) {
+                const existingCursor = element.querySelector('.cursor');
+                if (existingCursor) {
+                    existingCursor.remove();
+                }
+                element.innerHTML += '<span class="cursor"></span>';
+            }
+
+            removeCursor(element) {
+                const cursor = element.querySelector('.cursor');
+                if (cursor) {
+                    cursor.remove();
+                }
+            }
+
+            getRandomPause() {
+                // 95% chance of very fast speed, 5% chance of longer pause
+                if (Math.random() < 0.95) {
+                    return this.speed + Math.random() * 10;
+                } else {
+                    return 50 + Math.random() * 100; // Even shorter pause
+                }
+            }
+
+            wait(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
+
+        }
+
+        // Initialize the typewriter when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            const content = document.getElementById('content');
+            const text =
+                `Hello! I'm Joe.
+                I like to make things.
+                You can explore joe.graphics, where I share graphics work I've made. fromtheroot.studio, where I make digital assets, 3D animation visuals and solutions. syntheticlabs.xyz, where I research AI and make tools. cerebral.studio, housing compute and infrastructure services. context.agency, offering templated and bespoke automation solutions I've made.
+                Want me to make something for you?
+                Get in touch at hello@madebyjoe.co`;
+
+            // Development speed control - change this number to control typing speed
+            const devSpeed = 10; // 5 = very fast, 15 = normal, 50 = slow, 100 = very slow
+            const skipTyping = false; // Set to true to skip typing animation
+            const typewriter = new TypeWriter(content, text, devSpeed);
+
+            if (skipTyping) {
+                // Skip typing animation for quick development
+                content.innerHTML = text.split('\n').map(line => `<div class="typing-line visible">${line}</div>`).join('');
+            } else {
+                typewriter.type();
+            }
+
+
+        });
+    </script>
+</body>
+
+</html>
