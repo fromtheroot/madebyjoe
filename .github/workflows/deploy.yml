@@ -1,0 +1,25 @@
+name: Deploy to GoDaddy via FTP
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  ftp-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Sync files to GoDaddy
+        uses: SamKirkland/FTP-Deploy-Action@5.1.0
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          protocol: ftp
+          local-dir: .                  # the root of your repo
+          server-dir: ${{ secrets.FTP_REMOTE_PATH }}
+          git-ftp-args: --insecure      # optional, only if you run into TLS cert issues
