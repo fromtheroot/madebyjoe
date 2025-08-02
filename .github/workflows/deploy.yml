@@ -19,7 +19,6 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           port: ${{ secrets.FTP_PORT }}
-          protocol: sftp
+          protocol: ftps
           local-dir: .                  # the root of your repo
           server-dir: ${{ secrets.FTP_REMOTE_PATH }}
-          git-ftp-args: --insecure      # optional, only if you run into TLS cert issues
