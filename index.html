@@ -533,8 +533,8 @@
                 margin-bottom: 20px;
             }
         }
-        
         /* Burger menu and overlay navigation */
+        
         .burger {
             position: fixed;
             top: 22px;
@@ -550,11 +550,13 @@
             z-index: 1000;
             -webkit-tap-highlight-color: transparent;
         }
+        
         .burger .bars {
             position: relative;
             width: 26px;
             height: 18px;
         }
+        
         .burger .bars span {
             position: absolute;
             left: 0;
@@ -564,23 +566,36 @@
             border-radius: 1px;
             transition: transform calc(0.35s / var(--global-speed)) ease, opacity calc(0.25s / var(--global-speed)) ease, top calc(0.35s / var(--global-speed)) ease, background-color calc(0.2s / var(--global-speed)) ease;
         }
-        .burger .bars span:nth-child(1) { top: 0; }
-        .burger .bars span:nth-child(2) { top: 8px; }
-        .burger .bars span:nth-child(3) { top: 16px; }
+        
+        .burger .bars span:nth-child(1) {
+            top: 0;
+        }
+        
+        .burger .bars span:nth-child(2) {
+            top: 8px;
+        }
+        
+        .burger .bars span:nth-child(3) {
+            top: 16px;
+        }
+        
         .burger[aria-expanded="true"] .bars span:nth-child(1) {
             top: 8px;
             transform: rotate(45deg);
         }
+        
         .burger[aria-expanded="true"] .bars span:nth-child(2) {
             opacity: 0;
             transform: translateX(6px);
         }
+        
         .burger[aria-expanded="true"] .bars span:nth-child(3) {
             top: 8px;
             transform: rotate(-45deg);
         }
+        
         .burger:focus-visible {
-            outline: 2px solid rgba(255,255,255,0.6);
+            outline: 2px solid rgba(255, 255, 255, 0.6);
             outline-offset: 4px;
             border-radius: 6px;
         }
@@ -598,12 +613,17 @@
             transition: opacity calc(0.35s / var(--global-speed)) ease, transform calc(0.35s / var(--global-speed)) ease;
             z-index: 900;
         }
+        
         body.menu-open .nav-overlay {
             opacity: 1;
             pointer-events: auto;
             transform: translateY(0);
         }
-        body.menu-open { overflow: hidden; }
+        
+        body.menu-open {
+            overflow: hidden;
+        }
+        
         body.menu-open .terminal-container {
             opacity: 0.28;
             filter: blur(3px);
@@ -619,6 +639,7 @@
             align-items: center;
             text-align: center;
         }
+        
         .nav-menu a {
             color: #f74f14;
             text-decoration: none;
@@ -626,22 +647,31 @@
             font-size: clamp(22px, 4.5vw, 36px);
             transition: color calc(0.25s / var(--global-speed)) ease, transform calc(0.25s / var(--global-speed)) ease, text-shadow calc(0.25s / var(--global-speed)) ease;
         }
+        
         .nav-menu a:hover {
             color: #ff6b35;
             transform: translateX(6px);
             text-shadow: 0 0 12px rgba(247, 79, 20, 0.35);
         }
+        
         .nav-menu .small {
             font-size: clamp(16px, 3.2vw, 22px);
             opacity: 0.9;
         }
+        
         .nav-menu .icons {
             display: flex;
             gap: 26px;
             margin-top: 8px;
         }
-        .nav-menu .icons a { transform: none; }
-        .nav-menu .icons a:hover { transform: scale(1.05); }
+        
+        .nav-menu .icons a {
+            transform: none;
+        }
+        
+        .nav-menu .icons a:hover {
+            transform: scale(1.05);
+        }
     </style>
 </head>
 
@@ -704,6 +734,19 @@
             const overlay = document.querySelector('.nav-overlay');
             const menu = document.querySelector('.nav-menu');
 
+            function getMenuLabelForAnchor(anchor) {
+                const href = anchor.getAttribute('href') || anchor.href || '';
+                try {
+                    const url = new URL(href, window.location.origin);
+                    const hostname = (url.hostname || '').toLowerCase();
+                    if (hostname.includes('linkedin.com')) return 'Linkedin';
+                    if (hostname.includes('instagram.com')) return 'Instagram';
+                    if (hostname.includes('discord.com')) return 'Discord';
+                } catch (e) {}
+                const text = (anchor.textContent || '').replace(/[\,\s]+$/, '').trim();
+                return text || href;
+            }
+
             function collectLinks() {
                 const anchors = Array.from(document.querySelectorAll('.content a'));
                 const uniqueByHref = new Map();
@@ -724,7 +767,7 @@
                     item.href = a.href;
                     item.target = a.target || '_self';
                     item.rel = a.rel || (item.target === '_blank' ? 'noopener noreferrer' : '');
-                    item.textContent = a.textContent.replace(/[,\s]+$/,'').trim() || a.href;
+                    item.textContent = getMenuLabelForAnchor(a);
                     menu.appendChild(item);
                 });
 
@@ -763,14 +806,17 @@
                 burger.setAttribute('aria-label', 'Close navigation');
                 overlay.setAttribute('aria-hidden', 'false');
             }
+
             function closeMenu() {
                 body.classList.remove('menu-open');
                 burger.setAttribute('aria-expanded', 'false');
                 burger.setAttribute('aria-label', 'Open navigation');
                 overlay.setAttribute('aria-hidden', 'true');
             }
+
             function toggleMenu() {
-                if (body.classList.contains('menu-open')) closeMenu(); else openMenu();
+                if (body.classList.contains('menu-open')) closeMenu();
+                else openMenu();
             }
 
             burger.addEventListener('click', toggleMenu);
