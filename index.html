@@ -533,10 +533,129 @@
                 margin-bottom: 20px;
             }
         }
+        
+        /* Burger menu and overlay navigation */
+        .burger {
+            position: fixed;
+            top: 22px;
+            right: 24px;
+            width: 42px;
+            height: 42px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            z-index: 1000;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .burger .bars {
+            position: relative;
+            width: 26px;
+            height: 18px;
+        }
+        .burger .bars span {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #ffffff;
+            border-radius: 1px;
+            transition: transform calc(0.35s / var(--global-speed)) ease, opacity calc(0.25s / var(--global-speed)) ease, top calc(0.35s / var(--global-speed)) ease, background-color calc(0.2s / var(--global-speed)) ease;
+        }
+        .burger .bars span:nth-child(1) { top: 0; }
+        .burger .bars span:nth-child(2) { top: 8px; }
+        .burger .bars span:nth-child(3) { top: 16px; }
+        .burger[aria-expanded="true"] .bars span:nth-child(1) {
+            top: 8px;
+            transform: rotate(45deg);
+        }
+        .burger[aria-expanded="true"] .bars span:nth-child(2) {
+            opacity: 0;
+            transform: translateX(6px);
+        }
+        .burger[aria-expanded="true"] .bars span:nth-child(3) {
+            top: 8px;
+            transform: rotate(-45deg);
+        }
+        .burger:focus-visible {
+            outline: 2px solid rgba(255,255,255,0.6);
+            outline-offset: 4px;
+            border-radius: 6px;
+        }
+        
+        .nav-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(25, 25, 25, 0.96);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(10px);
+            transition: opacity calc(0.35s / var(--global-speed)) ease, transform calc(0.35s / var(--global-speed)) ease;
+            z-index: 900;
+        }
+        body.menu-open .nav-overlay {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+        body.menu-open { overflow: hidden; }
+        body.menu-open .terminal-container {
+            opacity: 0.28;
+            filter: blur(3px);
+            transform: scale(0.98);
+            transition: opacity calc(0.35s / var(--global-speed)) ease, filter calc(0.35s / var(--global-speed)) ease, transform calc(0.35s / var(--global-speed)) ease;
+        }
+        
+        .nav-menu {
+            width: min(760px, 92vw);
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            align-items: center;
+            text-align: center;
+        }
+        .nav-menu a {
+            color: #f74f14;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: clamp(22px, 4.5vw, 36px);
+            transition: color calc(0.25s / var(--global-speed)) ease, transform calc(0.25s / var(--global-speed)) ease, text-shadow calc(0.25s / var(--global-speed)) ease;
+        }
+        .nav-menu a:hover {
+            color: #ff6b35;
+            transform: translateX(6px);
+            text-shadow: 0 0 12px rgba(247, 79, 20, 0.35);
+        }
+        .nav-menu .small {
+            font-size: clamp(16px, 3.2vw, 22px);
+            opacity: 0.9;
+        }
+        .nav-menu .icons {
+            display: flex;
+            gap: 26px;
+            margin-top: 8px;
+        }
+        .nav-menu .icons a { transform: none; }
+        .nav-menu .icons a:hover { transform: scale(1.05); }
     </style>
 </head>
 
 <body>
+    <button class="burger" aria-label="Open navigation" aria-expanded="false">
+        <span class="bars" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+        </span>
+    </button>
+    <div class="nav-overlay" aria-hidden="true">
+        <nav class="nav-menu" role="navigation"></nav>
+    </div>
     <div class="terminal-container">
         <div class="content">
             <div class="line">
@@ -578,6 +697,99 @@
             </div>
         </div>
     </div>
+    <script>
+        (function() {
+            const body = document.body;
+            const burger = document.querySelector('.burger');
+            const overlay = document.querySelector('.nav-overlay');
+            const menu = document.querySelector('.nav-menu');
+
+            function collectLinks() {
+                const anchors = Array.from(document.querySelectorAll('.content a'));
+                const uniqueByHref = new Map();
+                anchors.forEach(a => {
+                    const href = a.getAttribute('href');
+                    if (!href) return;
+                    if (!uniqueByHref.has(href)) {
+                        uniqueByHref.set(href, a);
+                    }
+                });
+                const list = Array.from(uniqueByHref.values());
+                menu.innerHTML = '';
+
+                // Primary links (non-mailto)
+                const primary = list.filter(a => !a.href.startsWith('mailto:'));
+                primary.forEach(a => {
+                    const item = document.createElement('a');
+                    item.href = a.href;
+                    item.target = a.target || '_self';
+                    item.rel = a.rel || (item.target === '_blank' ? 'noopener noreferrer' : '');
+                    item.textContent = a.textContent.replace(/[,\s]+$/,'').trim() || a.href;
+                    menu.appendChild(item);
+                });
+
+                // Email link, if present
+                const email = list.find(a => a.href.startsWith('mailto:'));
+                if (email) {
+                    const small = document.createElement('a');
+                    small.href = email.href;
+                    small.textContent = email.textContent.trim();
+                    small.className = 'small';
+                    menu.appendChild(small);
+                }
+
+                // Social icons row, if present
+                const socials = document.querySelectorAll('.social-icons a');
+                if (socials.length) {
+                    const row = document.createElement('div');
+                    row.className = 'icons';
+                    socials.forEach(a => {
+                        const link = document.createElement('a');
+                        link.href = a.href;
+                        link.target = a.target || '_blank';
+                        link.rel = 'noopener noreferrer';
+                        link.title = a.title || '';
+                        link.innerHTML = a.innerHTML; // copy SVG icon
+                        row.appendChild(link);
+                    });
+                    menu.appendChild(row);
+                }
+            }
+
+            function openMenu() {
+                collectLinks();
+                body.classList.add('menu-open');
+                burger.setAttribute('aria-expanded', 'true');
+                burger.setAttribute('aria-label', 'Close navigation');
+                overlay.setAttribute('aria-hidden', 'false');
+            }
+            function closeMenu() {
+                body.classList.remove('menu-open');
+                burger.setAttribute('aria-expanded', 'false');
+                burger.setAttribute('aria-label', 'Open navigation');
+                overlay.setAttribute('aria-hidden', 'true');
+            }
+            function toggleMenu() {
+                if (body.classList.contains('menu-open')) closeMenu(); else openMenu();
+            }
+
+            burger.addEventListener('click', toggleMenu);
+            menu.addEventListener('click', (e) => {
+                const target = e.target;
+                if (target && target.closest('a')) {
+                    closeMenu();
+                }
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && body.classList.contains('menu-open')) {
+                    closeMenu();
+                }
+            });
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) closeMenu();
+            });
+        })();
+    </script>
 </body>
 
 </html>
