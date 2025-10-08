@@ -1,0 +1,20 @@
+# Ignore minified files to prevent auto-formatting
+styles.min.css
+script.min.js
+
+# Ignore generated files
+*.min.css
+*.min.js
+
+# Ignore server configuration files
+# .htaccess
+
+# Ignore documentation files
+PERFORMANCE_OPTIMIZATIONS.md
+DEPLOYMENT_CHECKLIST.md
+
+# Ignore video files (large assets)
+videos/*.mp4
+
+# Ignore captions file
+captions.vtt
